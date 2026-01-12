@@ -1,0 +1,21 @@
+[workspace]
+resolver = "3"
+members = ["t0x", "t0x-macros"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+license = "MIT"
+
+[workspace.dependencies]
+t0x = { path = "t0x" }
+t0x-macros = { path = "t0x-macros" }
+
+oxc_allocator = "0.101"
+oxc_ast = "0.101"
+oxc_codegen = "0.101"
+oxc_span = "0.101"
+
+proc-macro2 = "1"
+quote = "1"
+syn = { version = "2", features = ["full", "parsing", "extra-traits"] }

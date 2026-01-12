@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  publish:
+    name: Publish to crates.io
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+
+      - name: Verify version matches tag
+        run: |
+          TAG_VERSION="${GITHUB_REF#refs/tags/v}"
+          WORKSPACE_VERSION=$(grep '^version' Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+          if [ "$TAG_VERSION" != "$WORKSPACE_VERSION" ]; then
+            echo "Tag version ($TAG_VERSION) does not match workspace version ($WORKSPACE_VERSION)"
+            exit 1
+          fi
+
+      - name: Publish t0x-macros
+        run: cargo publish -p t0x-macros --token ${{ secrets.CRATES_IO_TOKEN }}
+
+      - name: Wait for crates.io index update
+        run: sleep 30
+
+      - name: Publish t0x
+        run: cargo publish -p t0x --token ${{ secrets.CRATES_IO_TOKEN }}
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: publish
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
