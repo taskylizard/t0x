@@ -61,6 +61,22 @@ type User = {
 | Tuples `(A, B, C)`                                   | `[A, B, C]`                                              |
 | `Result<T, E>`                                       | `{ ok: T; err: undefined } \| { ok: undefined; err: E }` |
 
+## 🔌 Feature Flags
+
+| Feature           | Description                                             |
+| ----------------- | ------------------------------------------------------- |
+| `serde-json-impl` | Adds `T0x` implementations for `serde_json` types       |
+
+### serde-json-impl
+
+Enables support for `serde_json` types:
+
+| Rust Type            | TypeScript Type                                                              |
+| -------------------- | ---------------------------------------------------------------------------- |
+| `serde_json::Value`  | `number \| string \| boolean \| null \| JsonValue[] \| Record<string, JsonValue>` |
+| `serde_json::Number` | `number`                                                                     |
+| `serde_json::Map<K, V>` | `Record<K, V>`                                                            |
+
 ## 🗺️ Attributes
 
 ### Container Attributes

@@ -577,6 +577,7 @@ dependencies = [
  "oxc_ast",
  "oxc_codegen",
  "oxc_span",
+ "serde_json",
  "t0x-macros",
 ]
 

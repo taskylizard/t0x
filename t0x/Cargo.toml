@@ -6,11 +6,17 @@ license.workspace = true
 repository.workspace = true
 description = "Generate TypeScript types from Rust types using oxc"
 
+[features]
+default = []
+serde-json-impl = ["serde_json"]
+
 [dependencies]
 oxc_allocator.workspace = true
 oxc_ast.workspace = true
 oxc_codegen.workspace = true
 oxc_span.workspace = true
 t0x-macros.workspace = true
+
+serde_json = { version = "1", optional = true }
 
 [dev-dependencies]
