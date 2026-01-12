@@ -3,6 +3,7 @@ name = "t0x-macros"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "Derive macros for t0x"
 
 [lib]

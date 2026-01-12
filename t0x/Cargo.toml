@@ -3,13 +3,14 @@ name = "t0x"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 description = "Generate TypeScript types from Rust types using oxc"
 
 [dependencies]
-t0x-macros.workspace = true
 oxc_allocator.workspace = true
 oxc_ast.workspace = true
 oxc_codegen.workspace = true
 oxc_span.workspace = true
+t0x-macros.workspace = true
 
 [dev-dependencies]
