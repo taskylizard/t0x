@@ -2,13 +2,24 @@
 
 use syn::{Attribute, Lit, Result};
 
-#[derive(Default)]
 pub struct ContainerAttr {
     pub rename: Option<String>,
     pub rename_all: Option<RenameRule>,
     pub tag: Option<String>,
     pub content: Option<String>,
     pub untagged: bool,
+}
+
+impl Default for ContainerAttr {
+    fn default() -> Self {
+        Self {
+            rename: None,
+            rename_all: Some(RenameRule::CamelCase),
+            tag: None,
+            content: None,
+            untagged: false,
+        }
+    }
 }
 
 #[derive(Default)]
