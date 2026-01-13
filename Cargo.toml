@@ -3,14 +3,14 @@ resolver = "3"
 members = ["t0x", "t0x-macros"]
 
 [workspace.package]
-version = "0.1.2"
+version = "0.1.3"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/taskylizard/t0x"
 
 [workspace.dependencies]
 t0x = { path = "t0x" }
-t0x-macros = { path = "t0x-macros", version = "0.1.2" }
+t0x-macros = { path = "t0x-macros", version = "0.1.3" }
 
 oxc_allocator = "0.101"
 oxc_ast = "0.101"
