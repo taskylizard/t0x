@@ -17,6 +17,22 @@
 //! let ts_code = User::type_def();
 //! // Results in: type User = { id: number; name: string; };
 //! ```
+//!
+//! ## Exporting Multiple Types
+//!
+//! Use [`export`] to generate multiple types at once:
+//!
+//! ```rust
+//! use t0x::{T0x, export};
+//!
+//! #[derive(T0x)]
+//! struct User { id: u32 }
+//!
+//! #[derive(T0x)]
+//! struct Post { title: String }
+//!
+//! let output = export!(User, Post);
+//! ```
 
 mod impls;
 mod output;
@@ -50,10 +66,38 @@ pub trait T0x {
     }
 }
 
+/// Generates TypeScript type definitions for multiple types.
+///
+/// # Example
+///
+/// ```rust
+/// use t0x::{T0x, export};
+///
+/// #[derive(T0x)]
+/// struct User { id: u32 }
+///
+/// #[derive(T0x)]
+/// struct Post { title: String }
+///
+/// let output = export!(User, Post);
+/// // Contains both type definitions
+/// ```
+#[macro_export]
+macro_rules! export {
+    ($($ty:ty),* $(,)?) => {{
+        let mut output = String::new();
+        $(
+            output.push_str(&<$ty as $crate::T0x>::type_def());
+            output.push('\n');
+        )*
+        output
+    }};
+}
+
 #[doc(hidden)]
 pub mod __private {
     pub use oxc_allocator::{Allocator, Vec as OxcVec};
-    pub use oxc_ast::{AstBuilder, ast::*};
+    pub use oxc_ast::{AstBuilder, NONE, ast::*};
     pub use oxc_span::{Atom, SPAN};
 
     use std::cell::RefCell;

@@ -48,7 +48,7 @@ fn generate_named_struct(
                         #type_override
                     );
                     ::t0x::__private::TSType::TSTypeReference(
-                        ast.alloc_ts_type_reference(::t0x::__private::SPAN, type_name, None)
+                        ast.alloc_ts_type_reference(::t0x::__private::SPAN, type_name, ::t0x::__private::NONE)
                     )
                 }
             }
