@@ -37,7 +37,7 @@
 mod impls;
 mod output;
 #[cfg(feature = "serde-json-impl")]
-mod serde_json;
+pub mod serde_json;
 
 pub use t0x_macros::T0x;
 

@@ -5,38 +5,81 @@ use oxc_allocator::Vec as OxcVec;
 use oxc_ast::{AstBuilder, NONE, ast::TSType};
 use oxc_span::SPAN;
 
+/// Returns the TypeScript type definition for `JsonValue`.
+///
+/// This should be included in the generated output when using `serde_json::Value`
+/// in your types, as the generated types will reference `JsonValue`.
+///
+/// # Example
+///
+/// ```rust
+/// use t0x::serde_json::json_value_def;
+///
+/// let mut output = String::new();
+/// output.push_str(&json_value_def());
+/// // output.push_str(&export!(MyType, ...));
+/// ```
+pub fn json_value_def() -> String {
+    <serde_json::Value as T0x>::type_def()
+}
+
 impl T0x for serde_json::Value {
     const NAME: &'static str = "JsonValue";
 
     fn ts_type<'a>(ast: AstBuilder<'a>) -> TSType<'a> {
+        use oxc_ast::ast::TSMappedTypeModifierOperator;
+
         let allocator = ast.allocator;
         let mut types = OxcVec::with_capacity_in(6, allocator);
 
+        // number
         types.push(TSType::TSNumberKeyword(ast.alloc_ts_number_keyword(SPAN)));
+        // string
         types.push(TSType::TSStringKeyword(ast.alloc_ts_string_keyword(SPAN)));
+        // boolean
         types.push(TSType::TSBooleanKeyword(ast.alloc_ts_boolean_keyword(SPAN)));
-        types.push(TSType::TSNullKeyword(ast.alloc_ts_null_keyword(SPAN)));
+
+        // Array<JsonValue>
+        let array_name = ast.ts_type_name_identifier_reference(SPAN, "Array");
 
         let self_ref = ast.ts_type_name_identifier_reference(SPAN, "JsonValue");
-        let array_element =
-            TSType::TSTypeReference(ast.alloc_ts_type_reference(SPAN, self_ref, NONE));
-        types.push(TSType::TSArrayType(
-            ast.alloc_ts_array_type(SPAN, array_element),
+        let mut array_args = OxcVec::with_capacity_in(1, allocator);
+        array_args.push(TSType::TSTypeReference(
+            ast.alloc_ts_type_reference(SPAN, self_ref, NONE),
         ));
 
-        let record_name = ast.ts_type_name_identifier_reference(SPAN, "Record");
-        let mut record_args = OxcVec::with_capacity_in(2, allocator);
-        record_args.push(TSType::TSStringKeyword(ast.alloc_ts_string_keyword(SPAN)));
-        let value_ref = ast.ts_type_name_identifier_reference(SPAN, "JsonValue");
-        record_args.push(TSType::TSTypeReference(
-            ast.alloc_ts_type_reference(SPAN, value_ref, NONE),
-        ));
-        let record_params = ast.ts_type_parameter_instantiation(SPAN, record_args);
+        let array_params = ast.ts_type_parameter_instantiation(SPAN, array_args);
         types.push(TSType::TSTypeReference(ast.alloc_ts_type_reference(
             SPAN,
-            record_name,
-            Some(record_params),
+            array_name,
+            Some(array_params),
         )));
+
+        // { [key in string]?: JsonValue }
+        let type_param = ast.ts_type_parameter(
+            SPAN,
+            ast.binding_identifier(SPAN, "key"),
+            Some(TSType::TSStringKeyword(ast.alloc_ts_string_keyword(SPAN))),
+            None,
+            true,  // in
+            false, // out
+            false, // const
+        );
+        let value_ref = ast.ts_type_name_identifier_reference(SPAN, "JsonValue");
+        let value_type =
+            TSType::TSTypeReference(ast.alloc_ts_type_reference(SPAN, value_ref, NONE));
+        let mapped_type = ast.ts_mapped_type(
+            SPAN,
+            type_param,
+            None,
+            Some(value_type),
+            Some(TSMappedTypeModifierOperator::True),
+            None,
+        );
+        types.push(TSType::TSMappedType(ast.alloc(mapped_type)));
+
+        // null
+        types.push(TSType::TSNullKeyword(ast.alloc_ts_null_keyword(SPAN)));
 
         TSType::TSUnionType(ast.alloc_ts_union_type(SPAN, types))
     }

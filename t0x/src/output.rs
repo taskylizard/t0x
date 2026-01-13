@@ -32,7 +32,15 @@ where
     );
 
     let decl = Declaration::TSTypeAliasDeclaration(ast.alloc(type_alias));
-    let stmt = Statement::from(decl);
+    let export_decl = ast.export_named_declaration(
+        SPAN,
+        Some(decl),
+        OxcVec::new_in(allocator),
+        None::<StringLiteral<'_>>,
+        ImportOrExportKind::Type,
+        None::<WithClause<'_>>,
+    );
+    let stmt = Statement::ExportNamedDeclaration(ast.alloc(export_decl));
 
     let mut body = OxcVec::new_in(allocator);
     body.push(stmt);
