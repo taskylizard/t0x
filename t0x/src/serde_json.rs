@@ -14,9 +14,7 @@ impl T0x for serde_json::Value {
 
         types.push(TSType::TSNumberKeyword(ast.alloc_ts_number_keyword(SPAN)));
         types.push(TSType::TSStringKeyword(ast.alloc_ts_string_keyword(SPAN)));
-        types.push(TSType::TSBooleanKeyword(
-            ast.alloc_ts_boolean_keyword(SPAN),
-        ));
+        types.push(TSType::TSBooleanKeyword(ast.alloc_ts_boolean_keyword(SPAN)));
         types.push(TSType::TSNullKeyword(ast.alloc_ts_null_keyword(SPAN)));
 
         let self_ref = ast.ts_type_name_identifier_reference(SPAN, "JsonValue");
@@ -28,17 +26,17 @@ impl T0x for serde_json::Value {
 
         let record_name = ast.ts_type_name_identifier_reference(SPAN, "Record");
         let mut record_args = OxcVec::with_capacity_in(2, allocator);
-        record_args.push(TSType::TSStringKeyword(
-            ast.alloc_ts_string_keyword(SPAN),
-        ));
+        record_args.push(TSType::TSStringKeyword(ast.alloc_ts_string_keyword(SPAN)));
         let value_ref = ast.ts_type_name_identifier_reference(SPAN, "JsonValue");
         record_args.push(TSType::TSTypeReference(
             ast.alloc_ts_type_reference(SPAN, value_ref, NONE),
         ));
         let record_params = ast.ts_type_parameter_instantiation(SPAN, record_args);
-        types.push(TSType::TSTypeReference(
-            ast.alloc_ts_type_reference(SPAN, record_name, Some(record_params)),
-        ));
+        types.push(TSType::TSTypeReference(ast.alloc_ts_type_reference(
+            SPAN,
+            record_name,
+            Some(record_params),
+        )));
 
         TSType::TSUnionType(ast.alloc_ts_union_type(SPAN, types))
     }
