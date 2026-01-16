@@ -1,9 +1,9 @@
 [package]
 name = "t0x"
-version.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
+version = "0.1.4"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/taskylizard/t0x"
 description = "Generate TypeScript types from Rust types using oxc"
 
 [features]
@@ -11,11 +11,11 @@ default = []
 serde-json-impl = ["serde_json"]
 
 [dependencies]
-oxc_allocator.workspace = true
-oxc_ast.workspace = true
-oxc_codegen.workspace = true
-oxc_span.workspace = true
-t0x-macros.workspace = true
+oxc_allocator = "0.101"
+oxc_ast = "0.101"
+oxc_codegen = "0.101"
+oxc_span = "0.101"
+t0x-macros = { path = "../t0x-macros", version = "0.1.4" }
 
 serde_json = { version = "1", optional = true }
 
