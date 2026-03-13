@@ -64,14 +64,10 @@ fn generate_externally_tagged(
         }
 
         let variant_name = &variant.ident;
-        let ts_variant_name = field_attr.rename.clone().unwrap_or_else(|| {
-            let name = variant_name.to_string();
-            if let Some(ref rule) = container_attr.rename_all {
-                rule.apply(&name)
-            } else {
-                name
-            }
-        });
+        let ts_variant_name = field_attr
+            .rename
+            .clone()
+            .unwrap_or_else(|| variant_name.to_string());
 
         let variant_type = match &variant.fields {
             Fields::Unit => {
@@ -217,14 +213,10 @@ fn generate_internally_tagged(
         }
 
         let variant_name = &variant.ident;
-        let ts_variant_name = field_attr.rename.clone().unwrap_or_else(|| {
-            let name = variant_name.to_string();
-            if let Some(ref rule) = container_attr.rename_all {
-                rule.apply(&name)
-            } else {
-                name
-            }
-        });
+        let ts_variant_name = field_attr
+            .rename
+            .clone()
+            .unwrap_or_else(|| variant_name.to_string());
 
         let variant_type = match &variant.fields {
             Fields::Unit => {
@@ -334,14 +326,10 @@ fn generate_adjacently_tagged(
         }
 
         let variant_name = &variant.ident;
-        let ts_variant_name = field_attr.rename.clone().unwrap_or_else(|| {
-            let name = variant_name.to_string();
-            if let Some(ref rule) = container_attr.rename_all {
-                rule.apply(&name)
-            } else {
-                name
-            }
-        });
+        let ts_variant_name = field_attr
+            .rename
+            .clone()
+            .unwrap_or_else(|| variant_name.to_string());
 
         let content_type = generate_variant_type(&variant.fields, container_attr)?;
 

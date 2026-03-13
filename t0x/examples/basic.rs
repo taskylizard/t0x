@@ -1,5 +1,7 @@
 //! Basic example of using t0x to generate TypeScript types
 
+#![allow(dead_code)]
+
 use t0x::T0x;
 
 /// A user in the system

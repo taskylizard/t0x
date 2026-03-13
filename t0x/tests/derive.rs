@@ -1,5 +1,7 @@
 //! Tests for derive macro
 
+#![allow(dead_code)]
+
 use t0x::T0x;
 
 #[test]

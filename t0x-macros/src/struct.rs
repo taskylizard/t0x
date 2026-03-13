@@ -6,7 +6,11 @@ use syn::{Fields, Result};
 
 use crate::attr::{ContainerAttr, FieldAttr};
 
-pub fn generate(fields: &Fields, container_attr: &ContainerAttr, skip_excluded: bool) -> Result<TokenStream> {
+pub fn generate(
+    fields: &Fields,
+    container_attr: &ContainerAttr,
+    skip_excluded: bool,
+) -> Result<TokenStream> {
     match fields {
         Fields::Named(named) => generate_named_struct(&named.named, container_attr, skip_excluded),
         Fields::Unnamed(unnamed) => generate_tuple_struct(&unnamed.unnamed, container_attr),
