@@ -33,8 +33,17 @@ fn derive_t0x_impl(input: DeriveInput) -> Result<TokenStream2> {
 
     let docs = extract_docs(&input.attrs);
 
+    if container_attr.as_name.is_some() {
+        let Data::Struct(_) = &input.data else {
+            return Err(syn::Error::new_spanned(
+                name,
+                "t0x(as_name) is only supported for structs",
+            ));
+        };
+    }
+
     let type_builder = match &input.data {
-        Data::Struct(data) => r#struct::generate(&data.fields, &container_attr)?,
+        Data::Struct(data) => r#struct::generate(&data.fields, &container_attr, false)?,
         Data::Enum(data) => r#enum::generate(&data.variants, &container_attr)?,
         Data::Union(_) => {
             return Err(syn::Error::new_spanned(
@@ -42,6 +51,29 @@ fn derive_t0x_impl(input: DeriveInput) -> Result<TokenStream2> {
                 "T0x cannot be derived for unions",
             ));
         }
+    };
+
+    let options_fn = if let Some(as_name) = container_attr.as_name.clone() {
+        let Data::Struct(data) = &input.data else {
+            return Err(syn::Error::new_spanned(
+                name,
+                "t0x(as_name) is only supported for structs",
+            ));
+        };
+        let options_builder = r#struct::generate(&data.fields, &container_attr, true)?;
+        quote! {
+            fn options_def() -> Option<String> {
+                let allocator = ::t0x::__private::Allocator::default();
+                let output = ::t0x::__private::TypeOutput {
+                    name: #as_name,
+                    docs: Self::ts_docs(),
+                    build_type: |ast| #options_builder,
+                };
+                Some(::t0x::__private::generate_ts_code(&allocator, &output))
+            }
+        }
+    } else {
+        quote! {}
     };
 
     let docs_fn = if docs.is_empty() {
@@ -64,6 +96,7 @@ fn derive_t0x_impl(input: DeriveInput) -> Result<TokenStream2> {
             }
 
             #docs_fn
+            #options_fn
         }
     })
 }

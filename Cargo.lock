@@ -571,7 +571,7 @@ dependencies = [
 
 [[package]]
 name = "t0x"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "oxc_allocator",
  "oxc_ast",
@@ -583,7 +583,7 @@ dependencies = [
 
 [[package]]
 name = "t0x-macros"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "proc-macro2",
  "quote",

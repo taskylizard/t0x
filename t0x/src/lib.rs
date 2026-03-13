@@ -59,6 +59,10 @@ pub trait T0x {
         None
     }
 
+    fn options_def() -> Option<String> {
+        None
+    }
+
     fn type_def() -> String {
         let allocator = Allocator::default();
         let output = TypeOutput {
@@ -93,6 +97,10 @@ macro_rules! export {
         $(
             output.push_str(&<$ty as $crate::T0x>::type_def());
             output.push('\n');
+            if let Some(options_def) = <$ty as $crate::T0x>::options_def() {
+                output.push_str(&options_def);
+                output.push('\n');
+            }
             if let Some(value_def) = <$ty as $crate::T0x>::value_def() {
                 output.push_str(&value_def);
                 output.push('\n');
@@ -107,6 +115,8 @@ pub mod __private {
     pub use oxc_allocator::{Allocator, Vec as OxcVec};
     pub use oxc_ast::{AstBuilder, NONE, ast::*};
     pub use oxc_span::{Atom, SPAN};
+
+    pub use crate::output::{TypeOutput, generate_ts_code};
 
     use std::cell::RefCell;
     use std::collections::HashMap;

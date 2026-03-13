@@ -4,6 +4,7 @@ use syn::{Attribute, Lit, Result};
 
 pub struct ContainerAttr {
     pub rename: Option<String>,
+    pub as_name: Option<String>,
     pub rename_all: Option<RenameRule>,
     pub tag: Option<String>,
     pub content: Option<String>,
@@ -14,6 +15,7 @@ impl Default for ContainerAttr {
     fn default() -> Self {
         Self {
             rename: None,
+            as_name: None,
             rename_all: Some(RenameRule::CamelCase),
             tag: None,
             content: None,
@@ -26,6 +28,7 @@ impl Default for ContainerAttr {
 pub struct FieldAttr {
     pub rename: Option<String>,
     pub skip: bool,
+    pub exclude: bool,
     pub optional: bool,
     pub r#type: Option<String>,
     pub flatten: bool,
@@ -89,6 +92,11 @@ impl ContainerAttr {
                     if let Lit::Str(s) = value {
                         result.rename = Some(s.value());
                     }
+                } else if meta.path.is_ident("as_name") {
+                    let value: Lit = meta.value()?.parse()?;
+                    if let Lit::Str(s) = value {
+                        result.as_name = Some(s.value());
+                    }
                 } else if meta.path.is_ident("rename_all") {
                     let value: Lit = meta.value()?.parse()?;
                     if let Lit::Str(s) = value {
@@ -142,6 +150,8 @@ impl FieldAttr {
                     }
                 } else if meta.path.is_ident("skip") {
                     result.skip = true;
+                } else if meta.path.is_ident("exclude") {
+                    result.exclude = true;
                 } else if meta.path.is_ident("optional") {
                     result.optional = true;
                 } else if meta.path.is_ident("type") {

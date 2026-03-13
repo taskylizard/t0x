@@ -6,9 +6,9 @@ use syn::{Fields, Result};
 
 use crate::attr::{ContainerAttr, FieldAttr};
 
-pub fn generate(fields: &Fields, container_attr: &ContainerAttr) -> Result<TokenStream> {
+pub fn generate(fields: &Fields, container_attr: &ContainerAttr, skip_excluded: bool) -> Result<TokenStream> {
     match fields {
-        Fields::Named(named) => generate_named_struct(&named.named, container_attr),
+        Fields::Named(named) => generate_named_struct(&named.named, container_attr, skip_excluded),
         Fields::Unnamed(unnamed) => generate_tuple_struct(&unnamed.unnamed, container_attr),
         Fields::Unit => generate_unit_struct(),
     }
@@ -17,6 +17,7 @@ pub fn generate(fields: &Fields, container_attr: &ContainerAttr) -> Result<Token
 fn generate_named_struct(
     fields: &syn::punctuated::Punctuated<syn::Field, syn::token::Comma>,
     container_attr: &ContainerAttr,
+    skip_excluded: bool,
 ) -> Result<TokenStream> {
     let mut field_builders = Vec::new();
 
@@ -24,6 +25,10 @@ fn generate_named_struct(
         let field_attr = FieldAttr::from_attrs(&field.attrs)?;
 
         if field_attr.skip {
+            continue;
+        }
+
+        if skip_excluded && field_attr.exclude {
             continue;
         }
 
