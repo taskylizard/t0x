@@ -2,5 +2,5 @@ sign-commit = false
 sign-tag = false
 push = true
 tag-name = "v{{version}}"
-pre-release-commit-message = "chore(release): {{version}}"
+pre-release-commit-message = "chore(release): v{{version}}"
 
