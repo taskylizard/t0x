@@ -1,6 +1,6 @@
 [package]
 name = "t0x"
-version = "0.1.8"
+version = "0.2.0"
 edition = "2024"
 license = "MIT"
 repository = "https://github.com/taskylizard/t0x"
@@ -15,7 +15,7 @@ oxc_allocator = "0.101"
 oxc_ast = "0.101"
 oxc_codegen = "0.101"
 oxc_span = "0.101"
-t0x-macros = { path = "../t0x-macros", version = "0.1.8" }
+t0x-macros = { path = "../t0x-macros", version = "0.2.0" }
 
 serde_json = { version = "1", optional = true }
 
