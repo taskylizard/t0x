@@ -1,6 +1,6 @@
 sign-commit = false
 sign-tag = false
 push = true
+shared-version = "workspace"
 tag-name = "v{{version}}"
 pre-release-commit-message = "chore(release): v{{version}}"
-
