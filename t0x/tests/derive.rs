@@ -202,6 +202,45 @@ fn test_field_docs() {
 }
 
 #[test]
+fn test_rustdoc_links_to_jsdoc() {
+    /// See [`LinkedUser`] and [the API](https://example.com/docs).
+    #[derive(T0x)]
+    struct WithDocLinks {
+        /// References [`LinkedUser`].
+        user_id: u64,
+        /// Uses [`LinkedUser`][crate::LinkedUser].
+        owner_id: u64,
+    }
+
+    struct LinkedUser;
+
+    let output = WithDocLinks::type_def();
+
+    assert!(
+        output.contains("See {@link LinkedUser} and {@link https://example.com/docs the API}.")
+    );
+    assert!(output.contains("/** References {@link LinkedUser}. */"));
+    assert!(output.contains("/** Uses {@link LinkedUser}. */"));
+}
+
+#[test]
+fn test_multiline_field_docs_are_jsdoc_blocks() {
+    #[derive(T0x)]
+    struct WithMultilineFieldDocs {
+        /// The user ID.
+        ///
+        /// See [`WithMultilineFieldDocs`].
+        user_id: u64,
+    }
+
+    let output = WithMultilineFieldDocs::type_def();
+
+    assert!(output.contains(
+        "/**\n\t * The user ID.\n\t * \n\t * See {@link WithMultilineFieldDocs}.\n\t */"
+    ));
+}
+
+#[test]
 fn test_bigint_field() {
     #[derive(T0x)]
     struct WithBigInt {

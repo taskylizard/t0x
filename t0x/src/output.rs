@@ -89,9 +89,7 @@ fn inject_field_docs(code: &str, field_docs: &std::collections::HashMap<String, 
                 if trimmed.starts_with(pattern.as_str()) {
                     let indent = line.len() - line.trim_start().len();
                     let indent_str: String = line.chars().take(indent).collect();
-                    result.push_str(&indent_str);
-                    result.push_str(doc);
-                    result.push('\n');
+                    push_indented_doc(&mut result, &indent_str, doc);
                     doc_inserted = true;
                     break;
                 }
@@ -112,9 +110,17 @@ fn inject_field_docs(code: &str, field_docs: &std::collections::HashMap<String, 
     result
 }
 
-// TODO: A bit dogshit, should be more native
-fn format_jsdoc(doc: &str) -> String {
-    let lines: Vec<&str> = doc.lines().collect();
+fn push_indented_doc(result: &mut String, indent: &str, doc: &str) {
+    for line in doc.lines() {
+        result.push_str(indent);
+        result.push_str(line);
+        result.push('\n');
+    }
+}
+
+pub(crate) fn format_jsdoc(doc: &str) -> String {
+    let converted = rustdoc_links_to_jsdoc(doc);
+    let lines: Vec<&str> = converted.lines().collect();
     if lines.is_empty() {
         return String::new();
     }
@@ -131,4 +137,158 @@ fn format_jsdoc(doc: &str) -> String {
     }
     result.push_str(" */\n");
     result
+}
+
+fn rustdoc_links_to_jsdoc(doc: &str) -> String {
+    let mut result = String::with_capacity(doc.len());
+    let mut last = 0;
+
+    for (start, ch) in doc.char_indices() {
+        if start < last {
+            continue;
+        }
+
+        if ch != '[' || is_escaped(doc, start) || is_image_link(doc, start) {
+            continue;
+        }
+
+        let Some(label_end) = find_closing(doc, start, '[', ']') else {
+            continue;
+        };
+        let label = &doc[start + 1..label_end];
+        let after_label = label_end + 1;
+
+        if doc[after_label..].starts_with("[]") {
+            if let Some(link) = jsdoc_link(label, label, false) {
+                result.push_str(&doc[last..start]);
+                result.push_str(&link);
+                last = after_label + 2;
+            }
+        } else if doc[after_label..].starts_with('(') {
+            let target_start = after_label + 1;
+            if let Some(target_end) = find_closing(doc, after_label, '(', ')') {
+                let target = &doc[target_start..target_end];
+                if let Some(link) = jsdoc_link(label, target, true) {
+                    result.push_str(&doc[last..start]);
+                    result.push_str(&link);
+                    last = target_end + 1;
+                }
+            }
+        } else if doc[after_label..].starts_with('[') {
+            let target_start = after_label + 1;
+            if let Some(target_end) = find_closing(doc, after_label, '[', ']') {
+                let target = &doc[target_start..target_end];
+                if let Some(link) = jsdoc_link(label, target, false) {
+                    result.push_str(&doc[last..start]);
+                    result.push_str(&link);
+                    last = target_end + 1;
+                }
+            }
+        } else if let Some(link) = jsdoc_link(label, label, false) {
+            result.push_str(&doc[last..start]);
+            result.push_str(&link);
+            last = after_label;
+        }
+    }
+
+    if last == 0 {
+        doc.to_string()
+    } else {
+        result.push_str(&doc[last..]);
+        result
+    }
+}
+
+fn jsdoc_link(label: &str, target: &str, allow_url: bool) -> Option<String> {
+    let label = strip_code_ticks(label.trim());
+    let target = strip_code_ticks(target.trim());
+    if label.is_empty() || target.is_empty() || label.contains('\n') || target.contains('\n') {
+        return None;
+    }
+
+    let target = if allow_url && is_url(target) {
+        target.to_string()
+    } else {
+        rust_path_to_jsdoc_target(target)?
+    };
+
+    if label == target {
+        Some(format!("{{@link {target}}}"))
+    } else {
+        Some(format!("{{@link {target} {label}}}"))
+    }
+}
+
+fn rust_path_to_jsdoc_target(path: &str) -> Option<String> {
+    let path = path
+        .strip_prefix("crate::")
+        .or_else(|| path.strip_prefix("self::"))
+        .or_else(|| path.strip_prefix("super::"))
+        .unwrap_or(path);
+
+    if path.is_empty()
+        || !path
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '_' | ':' | '.'))
+    {
+        return None;
+    }
+
+    let mut target = path.replace("::", ".");
+    if let Some(stripped) = target.strip_prefix('.') {
+        target = stripped.to_string();
+    }
+
+    if target.is_empty() {
+        None
+    } else {
+        Some(target)
+    }
+}
+
+fn strip_code_ticks(value: &str) -> &str {
+    value
+        .strip_prefix('`')
+        .and_then(|value| value.strip_suffix('`'))
+        .unwrap_or(value)
+}
+
+fn is_url(value: &str) -> bool {
+    value.starts_with("http://") || value.starts_with("https://")
+}
+
+fn is_escaped(doc: &str, start: usize) -> bool {
+    let mut slash_count = 0;
+    for ch in doc[..start].chars().rev() {
+        if ch != '\\' {
+            break;
+        }
+        slash_count += 1;
+    }
+    slash_count % 2 == 1
+}
+
+fn is_image_link(doc: &str, start: usize) -> bool {
+    doc[..start].ends_with('!')
+}
+
+fn find_closing(doc: &str, open_at: usize, open: char, close: char) -> Option<usize> {
+    let mut depth = 0;
+    for (idx, ch) in doc[open_at..].char_indices() {
+        let absolute = open_at + idx;
+        if is_escaped(doc, absolute) {
+            continue;
+        }
+
+        if ch == open {
+            depth += 1;
+        } else if ch == close {
+            depth -= 1;
+            if depth == 0 {
+                return Some(absolute);
+            }
+        }
+    }
+
+    None
 }

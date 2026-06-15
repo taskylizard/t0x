@@ -129,13 +129,15 @@ pub mod __private {
         if docs.is_empty() {
             return;
         }
-        let doc_str = docs.join(" ").trim().to_string();
+        let doc_str = docs.join("\n").trim().to_string();
         if doc_str.is_empty() {
             return;
         }
         FIELD_DOCS.with(|fd| {
-            fd.borrow_mut()
-                .insert(field_name.to_string(), format!("/** {} */", doc_str));
+            fd.borrow_mut().insert(
+                field_name.to_string(),
+                crate::output::format_jsdoc(&doc_str),
+            );
         });
     }
 
